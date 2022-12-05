@@ -1,1 +1,7 @@
 /dataset/
+client/.gitignore
+client/.eslintrc.json
+Pipfile
+.gitignore
+client/.editorconfig
+client/.vscode/extensions.json
