@@ -2,9 +2,11 @@ from typing import Union
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from whoosh.analysis import NgramTokenizer, StandardAnalyzer, NgramFilter
+from whoosh import scoring
+from whoosh.analysis import NgramTokenizer, StandardAnalyzer, NgramFilter, RegexTokenizer
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
+from whoosh.query import *
 
 app = FastAPI()
 
@@ -16,14 +18,32 @@ class SearchText(BaseModel):
 @app.post("/search")
 def read_item(search: SearchText):
     ix = open_dir("../indexdir")
+    scoring.BM25F(B=0.75, content_B=1.0, K1=1.5)
+
     from whoosh import query
     searcher = ix.searcher()
     parser = QueryParser("content", ix.schema, termclass=query.Variations)
     query = parser.parse(search.text)
 
     results = searcher.search(query)
-    print([token for token in query.all_tokens()])
-
     data = [{"id": res["path"], "title": res["title"], "content": res["content"]} for res in results]
 
-    return {"results": data}
+    ngf = NgramFilter(minsize=0, maxsize=3)
+    rext = RegexTokenizer()
+    stream = rext(search.text)
+
+
+    corrected = searcher.correct_query(query, search.text)
+
+    if not len(results):
+        query = parser.parse(corrected.string)
+        results = searcher.search(query)
+        data = [{"id": res["path"], "title": res["title"], "content": res["content"]} for res in results]
+
+    ngrams = list(filter(None, [token.text for token in ngf(stream)]))
+    print(ngrams)
+    query = Or([Term("content", ngram) for ngram in ngrams])
+
+    results = searcher.search(query)
+
+    return {"corrected": corrected.string, "results": data, "ngrams": list(results)}

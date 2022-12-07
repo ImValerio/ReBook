@@ -7,7 +7,9 @@ import csv
 from whoosh.qparser import QueryParser
 my_analyzer = StandardAnalyzer()
 
-schema = Schema(title=TEXT(analyzer=my_analyzer,stored=True), path=ID(stored=True), content=NGRAMWORDS(minsize=0,maxsize=4, stored=True))
+schema = Schema(title=TEXT(analyzer=my_analyzer,stored=True),
+                path=ID(stored=True),
+                content=TEXT(analyzer=my_analyzer, stored=True))
 #schema = Schema(title=TEXT(stored=True), path=ID(stored=True), content=TEXT(stored=True))
 if not os.path.exists("indexdir"):
     os.mkdir("indexdir")
