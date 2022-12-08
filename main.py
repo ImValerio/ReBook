@@ -7,9 +7,12 @@ import csv
 from whoosh.qparser import QueryParser
 my_analyzer = StandardAnalyzer()
 
-schema = Schema(title=TEXT(analyzer=my_analyzer,stored=True),
+schema = Schema(
+                title=TEXT(analyzer=my_analyzer,stored=True),
                 path=ID(stored=True),
-                content=TEXT(analyzer=my_analyzer, stored=True))
+                content=TEXT(analyzer=my_analyzer, stored=True),
+                review_score=NUMERIC(stored=True)
+                )
 #schema = Schema(title=TEXT(stored=True), path=ID(stored=True), content=TEXT(stored=True))
 if not os.path.exists("indexdir"):
     os.mkdir("indexdir")
@@ -27,7 +30,7 @@ with open('dataset/Reviews.csv') as csv_file:
             print(f'Column names are {", ".join(row)}')
             line_count += 1
         else:
-            writer.add_document(title=row[8], path=row[0], content=row[9])
+            writer.add_document(title=row[8], review_score=row[6], path=row[0], content=row[9])
             line_count += 1
     print(f'Processed {line_count} lines.')
     writer.commit()
