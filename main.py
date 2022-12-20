@@ -1,7 +1,7 @@
 from whoosh.analysis import StemmingAnalyzer, NgramFilter, StandardAnalyzer, NgramTokenizer
-from whoosh.index import create_in, open_dir
+from whoosh.index import create_in
 from whoosh.fields import *
-import os
+from decimal import Decimal
 import os.path
 import csv
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
@@ -12,10 +12,10 @@ my_analyzer = StandardAnalyzer()
 
 schema = Schema(
     title=TEXT(analyzer=my_analyzer, stored=True),
-    path=ID(stored=True),
+    path=ID(stored=True,sortable=True),
     content=TEXT(analyzer=my_analyzer, stored=True),
     review_score=NUMERIC(stored=True),
-    sentiment=NUMERIC(stored=True, sortable=True)
+    sentiment=NUMERIC(int, decimal_places=4, stored=True, sortable=True)
 )
 #schema = Schema(title=TEXT(stored=True), path=ID(stored=True), content=TEXT(stored=True))
 if not os.path.exists("indexdir"):
@@ -36,7 +36,7 @@ def calculateSentiment(review):
 
     logits = model(**inputs).logits
     softmax = F.softmax(logits, dim=1)
-    return softmax[0][1].item()
+    return round(softmax[0][1].item(),4)
 
 
 with open('dataset/Reviews.csv') as csv_file:
@@ -49,7 +49,7 @@ with open('dataset/Reviews.csv') as csv_file:
             print(f'Column names are {", ".join(row)}')
             line_count += 1
         else:
-            sentiment = calculateSentiment(row[9])
+            sentiment = Decimal(calculateSentiment(row[9]))
             writer.add_document(
                 title=row[8], review_score=row[6], path=row[0], content=row[9], sentiment=sentiment)
             line_count += 1

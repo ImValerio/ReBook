@@ -6,3 +6,4 @@ client/.editorconfig
 client/.vscode/extensions.json
 client/.vscode/launch.json
 client/.vscode/tasks.json
+indexdir/*
