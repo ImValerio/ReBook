@@ -11,8 +11,9 @@ from whoosh.qparser import QueryParser
 my_analyzer = StandardAnalyzer()
 
 schema = Schema(
-    title=TEXT(analyzer=my_analyzer, stored=True),
-    path=ID(stored=True,sortable=True),
+    book_title=TEXT(analyzer=my_analyzer, stored=True),
+    review_title=TEXT(analyzer=my_analyzer, stored=True),
+    path=ID(stored=True, sortable=True),
     content=TEXT(analyzer=my_analyzer, stored=True),
     review_score=NUMERIC(stored=True),
     sentiment=NUMERIC(int, decimal_places=4, stored=True, sortable=True)
@@ -36,22 +37,24 @@ def calculateSentiment(review):
 
     logits = model(**inputs).logits
     softmax = F.softmax(logits, dim=1)
-    return round(softmax[0][1].item(),4)
+    return round(softmax[0][1].item(), 4)
 
 
-with open('dataset/Reviews.csv') as csv_file:
+with open('dataset/Books_rating.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     for row in csv_reader:
-        if line_count > 100:
+        if line_count > 10000:
             break
         if line_count == 0:
             print(f'Column names are {", ".join(row)}')
             line_count += 1
         else:
-            sentiment = Decimal(calculateSentiment(row[9]))
+            # sentiment = Decimal(calculateSentiment(row[9]))
+            sentiment = 0
+            print(line_count, row[1])
             writer.add_document(
-                title=row[8], review_score=row[6], path=row[0], content=row[9], sentiment=sentiment)
+                book_title=row[1], review_title=row[8], review_score=float(row[6]), path=row[0], content=row[9], sentiment=sentiment)
             line_count += 1
     print(f'Processed {line_count} lines.')
     writer.commit()
