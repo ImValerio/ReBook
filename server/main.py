@@ -5,7 +5,7 @@ from typing import Union
 
 from fastapi import FastAPI
 from pydantic import BaseModel
-from whoosh import scoring
+from whoosh import scoring, qparser
 from whoosh.analysis import NgramTokenizer, StandardAnalyzer, NgramFilter, RegexTokenizer
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser, MultifieldParser
@@ -13,7 +13,7 @@ from whoosh.query import *
 from models.BM25F import BM25F
 from models.CustomWeight import CustomWeight
 from whoosh.scoring import WeightScorer
-from utils_fn import calculateSentimentNltk
+from utils_fn import calculateSentimentNltk, prioritizeTitle
 
 app = FastAPI()
 
@@ -33,7 +33,7 @@ def pos_sentiment_fn(searcher, fieldname, text, matcher):
     docnum = matcher.id()
     colreader = searcher.reader().column_reader("sentiment")
     sentiment = float(colreader[docnum])
-    print("SENTIMENT: ", sentiment)
+    # print("SENTIMENT: ", sentiment)
 
     return sentiment
 
@@ -51,13 +51,13 @@ def read_item(search: SearchText):
 
     elif search.mode == "CONTENT_SENTIMENT":
         pos_weighting = CustomWeight(pos_sentiment_fn)
-
+    # TODO: modificare il query language, mettere in and solo il titolo del libro
     from whoosh import query
     searcher = ix.searcher(weighting=pos_weighting)
     parser = MultifieldParser(["review_title", "content"],
-                              ix.schema, termclass=query.Variations)
-    query = parser.parse(search.text)
-
+                              ix.schema, termclass=query.Variations, group=qparser.OrGroup)
+    query = parser.parse(prioritizeTitle(search.text))
+    print("QUERY: ", query)
     results = searcher.search_page(query, search.page)
 
     dcg = 0
@@ -94,12 +94,14 @@ def read_item(search: SearchText):
     if not len(results):
         query = parser.parse(corrected.string)
         results = searcher.search(query)
-        data = [{"id": res["path"], "title": res["title"],
+        data = [{"id": res["path"], "title": res["review_title"],
                  "content": res["content"], "sentiment":res["sentiment"]} for res in results]
 
     ngrams = list(filter(None, [token.text for token in ngf(stream)]))
-    query = Or([Term("content", ngram) for ngram in ngrams])
 
+    query_title = [Term("review_title", ngram_title) for ngram_title in ngrams]
+    query_content = [Term("content", ngram) for ngram in ngrams]
+    query = Or(query_title + query_content)
     results = searcher.search(query)
 
     return {"corrected": corrected.string, "results": data, "ngrams": list(results), "DCG": dcg}

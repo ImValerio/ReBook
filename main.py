@@ -29,7 +29,7 @@ with open('dataset/Books_rating.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     line_count = 0
     for row in csv_reader:
-        if line_count > 1000:
+        if line_count > 5000:
             break
         if line_count == 0:
             print(f'Column names are {", ".join(row)}')
@@ -37,7 +37,7 @@ with open('dataset/Books_rating.csv') as csv_file:
         else:
             filtred_content = removeStopWords(row[9])
             sentiment = round(
-                Decimal(calculateSentiment(row[9])), 4)
+                Decimal(calculateSentimentNltk(row[9])), 4)
             # sentiment = Decimal(calculateSentiment(filtred_content))
             print(line_count, sentiment)
             writer.add_document(

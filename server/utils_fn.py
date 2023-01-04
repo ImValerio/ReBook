@@ -49,3 +49,21 @@ def normalizeBetweenZeroAndOne(res):
     end = 1
     width = end - start
     return (res - 0)/((1+1) - 0) * width + start
+
+
+def haveTitle(text):
+    return "|" in text
+
+
+def prioritizeTitle(text):
+    if haveTitle(text) and text.index("|") > 3:
+
+        title_split = text.split("|")
+        title_split.insert(0, title_split[1])
+        title_split.pop(2)
+
+        res = " ".join(title_split)
+
+        return res
+
+    return text
