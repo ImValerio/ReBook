@@ -55,11 +55,10 @@ def read_item(search: SearchText):
     from whoosh import query
     searcher = ix.searcher(weighting=pos_weighting)
     parser = MultifieldParser(["review_title", "content"],
-                              ix.schema, termclass=query.Variations, group=qparser.OrGroup)
-    query = parser.parse(prioritizeTitle(search.text))
-    print("QUERY: ", query)
+                              ix.schema, termclass=query.Variations)
+    query = prioritizeTitle(search.text, parser)
+    print(query)
     results = searcher.search_page(query, search.page)
-
     dcg = 0
 
     results_score = [result.score for result in results]

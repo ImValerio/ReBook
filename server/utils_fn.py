@@ -3,6 +3,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from torch.nn import functional as F
+from whoosh.query import And, Or, Variations, Term
 
 # tokenizer = AutoTokenizer.from_pretrained(
 #    "review-sentiment-analysis", local_files_only=True)
@@ -55,15 +56,24 @@ def haveTitle(text):
     return "|" in text
 
 
-def prioritizeTitle(text):
-    if haveTitle(text) and text.index("|") > 3:
+def prioritizeTitle(text, parser):
+    if haveTitle(text):
 
         title_split = text.split("|")
-        title_split.insert(0, title_split[1])
-        title_split.pop(2)
+        book_title = removeStopWords(title_split[1].lower()).strip().split(" ")
+        print(book_title)
+        # query_book_title = [And([Or([Term('review_title', word_title), Term(
+        # 'content', word_title)]) for word_title in book_title])]
+        query_book_title = [And([Term('book_title', word_title)
+                                for word_title in book_title])]
 
-        res = " ".join(title_split)
+        title_split.pop(1)
+        text_without_title = removeStopWords(
+            " ".join(title_split)).strip().split(" ")
+        print(text_without_title)
+        final_query = Or(query_book_title + [Or([Variations('review_title', word_title), Variations(
+            'content', word_title)]) for word_title in text_without_title])
 
-        return res
+        return final_query
 
-    return text
+    return parser.parse(text)
