@@ -4,24 +4,7 @@ from whoosh.compat import iteritems
 from whoosh.scoring import WeightingModel, WeightLengthScorer, WeightScorer
 from utils_fn import calculateSentimentNltk
 from whoosh.scoring import BaseScorer
-
-
-def score_fn(searcher, fieldname, text, matcher):
-    poses = matcher.value_as("positions")
-
-    print(fieldname, poses)
-
-    docnum = matcher.id()
-    colreader = searcher.reader().column_reader("sentiment")
-    sentiment = float(colreader[docnum])
-
-    position_score = 1/(poses[0] + 1)
-    percentage_score = position_score * sentiment
-
-    score = round(position_score + percentage_score, 5)
-
-    print(score)
-    return score
+from score_fn import pos_sentiment_fn
 
 
 def max_tmp():
@@ -29,7 +12,7 @@ def max_tmp():
 
 
 class CustomWeight(WeightingModel):
-    def __init__(self, fn=score_fn):
+    def __init__(self, fn=pos_sentiment_fn):
         self.fn = fn
         self.max_quality = 10
 
