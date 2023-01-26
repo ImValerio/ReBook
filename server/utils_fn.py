@@ -77,3 +77,9 @@ def prioritizeTitle(text, parser):
         return final_query
 
     return parser.parse(text)
+
+
+def normalizeBetweenZeroToN(res, results_score, end):
+    start = 0
+    width = end - start
+    return (res - min(results_score))/((max(results_score)+1) - min(results_score)) * width + start

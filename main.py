@@ -37,7 +37,7 @@ with open('dataset/Books_rating.csv') as csv_file:
         else:
             filtred_content = removeStopWords(row[9])
             sentiment = round(
-                Decimal(calculateSentimentNltk(row[9])), 4)
+                Decimal(calculateSentiment(row[9])), 4)
             # sentiment = Decimal(calculateSentiment(filtred_content))
             print(line_count, sentiment)
             writer.add_document(
