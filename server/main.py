@@ -1,8 +1,7 @@
-import math
-
+from evalutation import get_discounted_gain, get_dcg
 from tkinter.tix import TEXT
 from typing import Union
-
+from ngrams import get_ngrams
 from fastapi import FastAPI
 from pydantic import BaseModel
 from whoosh import scoring, qparser
@@ -13,7 +12,7 @@ from whoosh.query import *
 from models.BM25F import BM25F
 from models.CustomWeight import CustomWeight
 from whoosh.scoring import WeightScorer
-from utils_fn import calculateSentimentNltk, prioritizeTitle, normalizeBetweenZeroToN
+from utils_fn import calculateSentimentNltk, prioritizeTitle, normalizeBetweenZeroToN, get_review_obj
 from score_fn import sentiment_fn
 
 app = FastAPI()
@@ -48,57 +47,26 @@ def read_item(search: SearchText):
     parser = MultifieldParser(["review_title", "content"],
                               ix.schema, termclass=query.Variations)
     query = prioritizeTitle(search.text, parser)
-    print(query)
     results = searcher.search_page(query, search.page)
-    dcg = []
-    discounted_gain = []
 
     results_score = [result.score for result in results]
-
-    print(results_score)
-
     results_score_norm = [round(normalizeBetweenZeroToN(res, results_score, 3))
                           for res in results_score]
+    discounted_gain_normalized = get_discounted_gain(results_score_norm)
 
-    print("SCORE NORM: ", results_score_norm)
+    dcg = get_dcg(discounted_gain_normalized)
 
-    for i, rel in enumerate(results_score_norm):
-        if i == 0:
-            discounted_gain.append(rel)
-        else:
-            discounted_gain.append(rel / math.log2(i + 1))
-
-    discounted_gain_normalized = [round(normalizeBetweenZeroToN(res, discounted_gain, 1), 4)
-                                  for res in discounted_gain]
-    print("DG NORMALIZED: ", discounted_gain_normalized)
-    for i, score in enumerate(discounted_gain_normalized):
-        if i == 0:
-            dcg.append(score)
-        else:
-            dcg.append(dcg[i-1] + score)
-
-    data = [{"id": res["path"], "book_title":res["book_title"], "review_title": res["review_title"],
-             "content": res["content"], "length":len(res["content"]), "review_score":res["review_score"],  "score":res.score, "sentiment":res["sentiment"]} for res in results]
-
-    print("DCG: ", dcg)
-
-    ngf = NgramFilter(minsize=0, maxsize=3)
-    rext = RegexTokenizer()
-    stream = rext(search.text)
+    results_ngrams = []
+    data = get_review_obj(results)
 
     corrected = searcher.correct_query(query, search.text)
-
+    # Se la query non restitusice alcun risultato => eseguo la query con la correzione della stringa utente
     if not len(results):
         query = parser.parse(corrected.string)
         results = searcher.search(query)
-        data = [{"id": res["path"], "title": res["review_title"],
-                 "content": res["content"], "sentiment":res["sentiment"]} for res in results]
+        data = get_review_obj(results)
+        # Se la query 'corretta' non restituisce alcun risultato allora cerchiamo con i q-grams della stringa utente
+        if not len(results):
+            results_ngrams = get_ngrams(search.text, query, searcher)
 
-    ngrams = list(filter(None, [token.text for token in ngf(stream)]))
-
-    query_title = [Term("review_title", ngram_title) for ngram_title in ngrams]
-    query_content = [Term("content", ngram) for ngram in ngrams]
-    query = Or(query_title + query_content)
-    results = searcher.search(query)
-
-    return {"corrected": corrected.string, "results": data, "ngrams": list(results), "DCG": dcg}
+    return {"corrected": corrected.string, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "DCG": dcg}
