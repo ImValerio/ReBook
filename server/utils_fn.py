@@ -61,7 +61,6 @@ def prioritizeTitle(text, parser):
 
         title_split = text.split("|")
         book_title = removeStopWords(title_split[1].lower()).strip().split(" ")
-        print(book_title)
         # query_book_title = [And([Or([Term('review_title', word_title), Term(
         # 'content', word_title)]) for word_title in book_title])]
         query_book_title = [And([Term('book_title', word_title)
@@ -70,7 +69,6 @@ def prioritizeTitle(text, parser):
         title_split.pop(1)
         text_without_title = removeStopWords(
             " ".join(title_split)).strip().split(" ")
-        print(text_without_title)
         final_query = Or(query_book_title + [Or([Variations('review_title', word_title), Variations(
             'content', word_title)]) for word_title in text_without_title])
 
@@ -83,3 +81,8 @@ def normalizeBetweenZeroToN(res, results_score, end):
     start = 0
     width = end - start
     return (res - min(results_score))/((max(results_score)+1) - min(results_score)) * width + start
+
+
+def get_review_obj(review_array):
+    return [{"id": res["path"], "book_title":res["book_title"], "review_title": res["review_title"],
+             "content": res["content"], "length":len(res["content"]), "review_score":res["review_score"],  "score":res.score, "sentiment":res["sentiment"]} for res in review_array]
