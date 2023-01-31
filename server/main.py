@@ -11,7 +11,7 @@ from whoosh.qparser import QueryParser, MultifieldParser
 from whoosh.query import *
 from models.BM25F import BM25F
 from models.CustomWeight import CustomWeight
-from whoosh.scoring import WeightScorer
+from whoosh.scoring import TF_IDF
 from utils_fn import calculateSentimentNltk, prioritizeTitle, normalizeBetweenZeroToN, get_review_obj
 from score_fn import sentiment_fn
 
@@ -36,8 +36,11 @@ def read_item(search: SearchText):
     # pos_weighting = scoring.FunctionWeighting(pos_score_fn)
     pos_weighting = CustomWeight()
     # k1: importanza frequenza di un termine; b: importanza lunghezza del documento
-    if search.mode == "CONTENT_TEXT":
+    if search.mode == "CONTENT_BM25":
         pos_weighting = BM25F(B=0.75, content_B=1.0, K1=1.5)
+
+    if search.mode == "CONTENT_TF_IDF":
+        pos_weighting = TF_IDF()
 
     elif search.mode == "CONTENT_SENTIMENT":
         pos_weighting = CustomWeight(sentiment_fn)
