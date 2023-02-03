@@ -1,3 +1,10 @@
-<div class="w-full bg-orange-400">
-    <p>Ciao sono l'header</p>
+<div class="bg-card w-full px-6 bg-gray-400">
+    <div class="flex flex-row justify-between">
+        <div class="text-white text-lg md:text-5xl font-semibold m-4 leading-10">
+            <ng-content select="[title]"></ng-content>
+        </div>
+        <div class="">
+            <ng-content select="[action]"></ng-content>
+        </div>
+    </div>
 </div>

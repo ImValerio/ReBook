@@ -1,0 +1,18 @@
+<page-body>
+    <page-header header>
+        <p title>Titolo</p>
+    </page-header>
+    <div body class="flex flex-col justify-center items-center mt-7 bg-gray-200">
+      <div class="w-full flex justify-center max-w-lg">
+        <input-search class="w-full" [initialText]="searchtext"></input-search>
+      </div>
+      <ng-container *ngIf="(searchResult$ | async) as searchResult">
+        <div class="mt-2 w-full h-full max-w-2xl " *ngFor="let res of searchResult">
+          <p>{{res.book_title}}</p>
+          <p>{{res.content}}</p>
+          <p>{{res.review_scrore}}</p>
+          <p>{{res.review_title}}</p>
+        </div>
+      </ng-container>
+    </div>
+  </page-body>
