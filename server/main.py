@@ -1,11 +1,10 @@
-import math
-
+from evalutation import get_discounted_gain, get_dcg
 from tkinter.tix import TEXT
 from typing import Union
-
+from ngrams import get_ngrams
 from fastapi import FastAPI
 from pydantic import BaseModel
-from whoosh import scoring
+from whoosh import scoring, qparser
 from whoosh.analysis import NgramTokenizer, StandardAnalyzer, NgramFilter, RegexTokenizer
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser, MultifieldParser
@@ -15,6 +14,9 @@ from models.CustomWeight import CustomWeight
 from whoosh.scoring import WeightScorer
 from utils_fn import calculateSentimentNltk
 from fastapi.middleware.cors import CORSMiddleware
+from whoosh.scoring import TF_IDF
+from utils_fn import calculateSentimentNltk, prioritizeTitle, normalizeBetweenZeroToN, get_review_obj
+from score_fn import sentiment_fn
 
 app = FastAPI()
 
@@ -59,60 +61,40 @@ def read_item(search: SearchText):
     # pos_weighting = scoring.FunctionWeighting(pos_score_fn)
     pos_weighting = CustomWeight()
     # k1: importanza frequenza di un termine; b: importanza lunghezza del documento
-    if search.mode == "CONTENT_TEXT":
+    if search.mode == "CONTENT_BM25":
         pos_weighting = BM25F(B=0.75, content_B=1.0, K1=1.5)
 
-    elif search.mode == "CONTENT_SENTIMENT":
-        pos_weighting = CustomWeight(pos_sentiment_fn)
+    if search.mode == "CONTENT_TF_IDF":
+        pos_weighting = TF_IDF()
 
+    elif search.mode == "CONTENT_SENTIMENT":
+        pos_weighting = CustomWeight(sentiment_fn)
+    # TODO: modificare il query language, mettere in and solo il titolo del libro
     from whoosh import query
     searcher = ix.searcher(weighting=pos_weighting)
     parser = MultifieldParser(["review_title", "content"],
                               ix.schema, termclass=query.Variations)
-    query = parser.parse(search.text)
-
+    query = prioritizeTitle(search.text, parser)
     results = searcher.search_page(query, search.page)
 
-    dcg = 0
-
     results_score = [result.score for result in results]
-
-    print(results_score)
-
-    def normalizeBetweenZeroThree(res):
-        start = 0
-        end = 3
-        width = end - start
-        return (res - min(results_score))/((max(results_score)+1) - min(results_score)) * width + start
-
-    results_score_norm = [round(normalizeBetweenZeroThree(res))
+    results_score_norm = [round(normalizeBetweenZeroToN(res, results_score, 3))
                           for res in results_score]
+    discounted_gain_normalized = get_discounted_gain(results_score_norm)
 
-    print(results_score_norm)
-    for i, rel in enumerate(results_score_norm):
-        if i == 0:
-            dcg += rel
-        else:
-            dcg += (rel / math.log2(i + 1))
+    dcg = get_dcg(discounted_gain_normalized)
 
-    data = [{"id": res["path"], "book_title":res["book_title"], "review_title": res["review_title"],
-             "content": res["content"], "length":len(res["content"]), "review_score":res["review_score"],  "score":res.score, "sentiment":res["sentiment"]} for res in results]
-
-    ngf = NgramFilter(minsize=0, maxsize=3)
-    rext = RegexTokenizer()
-    stream = rext(search.text)
+    results_ngrams = []
+    data = get_review_obj(results)
 
     corrected = searcher.correct_query(query, search.text)
-
+    # Se la query non restitusice alcun risultato => eseguo la query con la correzione della stringa utente
     if not len(results):
         query = parser.parse(corrected.string)
         results = searcher.search(query)
-        data = [{"id": res["path"], "title": res["title"],
-                 "content": res["content"], "sentiment":res["sentiment"]} for res in results]
+        data = get_review_obj(results)
+        # Se la query 'corretta' non restituisce alcun risultato allora cerchiamo con i q-grams della stringa utente
+        if not len(results):
+            results_ngrams = get_ngrams(search.text, query, searcher)
 
-    ngrams = list(filter(None, [token.text for token in ngf(stream)]))
-    query = Or([Term("content", ngram) for ngram in ngrams])
-
-    results = searcher.search(query)
-
-    return {"corrected": corrected.string, "results": data, "ngrams": list(results), "DCG": dcg}
+    return {"corrected": corrected.string, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "DCG": dcg}
