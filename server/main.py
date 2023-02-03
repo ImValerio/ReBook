@@ -14,9 +14,22 @@ from models.BM25F import BM25F
 from models.CustomWeight import CustomWeight
 from whoosh.scoring import WeightScorer
 from utils_fn import calculateSentimentNltk
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:4200",
+    "http://localhost:4200/overview",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def max_matcher():
     return 100000
@@ -38,7 +51,7 @@ def pos_sentiment_fn(searcher, fieldname, text, matcher):
     return sentiment
 
 
-@ app.post("/search")
+@app.post("/search")
 def read_item(search: SearchText):
 
     ix = open_dir("../indexdir")
