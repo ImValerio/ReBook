@@ -58,15 +58,20 @@ export class InputSearchComponent implements OnInit, OnDestroy {
       this.inputSearchService.searchText(book).pipe(
         takeUntil(this._unsubscribeAll),
       ).subscribe((list) => {
+        console.log(list.results);
+        
         this.listText=list.results;
       });
     });
   }
 
-  public outputTextResult(newText: string){
-    this.listService.setList(this.listText);
-    console.log('Sono dentro');
-
+  public outputTextResult(newText: any){
+    const a = this.listText.filter(res => res.content===newText);
+    if(a.length>0){
+      this.listService.setList(a);
+    }else{
+      this.listService.setList(this.listText);
+    }
     this.router.navigate([ 'search-result', newText]);
   }
 
