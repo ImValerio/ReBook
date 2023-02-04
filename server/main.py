@@ -63,8 +63,10 @@ def read_item(search: SearchText):
     data = get_review_obj(results)
 
     corrected = searcher.correct_query(query, search.text)
+    corrected.isUsed = False
     # Se la query non restitusice alcun risultato => eseguo la query con la correzione della stringa utente
     if not len(results):
+        corrected.isUsed = True
         query = parser.parse(corrected.string)
         results = searcher.search(query)
         data = get_review_obj(results)
@@ -72,4 +74,4 @@ def read_item(search: SearchText):
         if not len(results):
             results_ngrams = get_ngrams(search.text, query, searcher)
 
-    return {"corrected": corrected.string, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "DCG": dcg}
+    return {"corrected": {"text":corrected.string, "isUsed":corrected.isUsed}, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "DCG": dcg}
