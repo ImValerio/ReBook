@@ -11,12 +11,27 @@ from whoosh.qparser import QueryParser, MultifieldParser
 from whoosh.query import *
 from models.BM25F import BM25F
 from models.CustomWeight import CustomWeight
+from whoosh.scoring import WeightScorer
+from utils_fn import calculateSentimentNltk
+from fastapi.middleware.cors import CORSMiddleware
 from whoosh.scoring import TF_IDF
 from utils_fn import calculateSentimentNltk, prioritizeTitle, normalizeBetweenZeroToN, get_review_obj
 from score_fn import sentiment_fn
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:4200",
+    "http://localhost:4200/overview",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def max_matcher():
     return 100000
@@ -28,7 +43,17 @@ class SearchText(BaseModel):
     page: Union[int, None] = 1
 
 
-@ app.post("/search")
+def pos_sentiment_fn(searcher, fieldname, text, matcher):
+
+    docnum = matcher.id()
+    colreader = searcher.reader().column_reader("sentiment")
+    sentiment = float(colreader[docnum])
+    print("SENTIMENT: ", sentiment)
+
+    return sentiment
+
+
+@app.post("/search")
 def read_item(search: SearchText):
 
     ix = open_dir("../indexdir")

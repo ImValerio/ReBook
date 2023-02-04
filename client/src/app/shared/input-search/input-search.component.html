@@ -1,1 +1,11 @@
-<h1 class="text-3xl font-bold underline flex justify-center">sono il component input-text</h1>
+<mat-form-field class="rounded-xl w-full">
+    <input class="w-full" type="text" #inputText='ngModel' [(ngModel)]="currentText" matInput (keyup.enter)="outputTextResult(inputText.value)"
+        [matAutocomplete]="auto" name="text" placeholder="Inserte a text"
+        (input)="loadList()">
+    <mat-autocomplete #auto="matAutocomplete">
+        <mat-option *ngFor="let text of listText" [value]="text.content" (click)="outputTextResultClick(text)" (onSelectionChange)="outputTextResultClick(text)">
+            <span>{{text.content | slice:0:50}}...</span><br>
+            <span class="text-sm">{{text.book_title }}</span>
+        </mat-option>
+    </mat-autocomplete>
+</mat-form-field>
