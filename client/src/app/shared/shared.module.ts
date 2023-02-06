@@ -8,13 +8,14 @@ import {PageBodyComponent} from './layout/page-body/page-body.component';
 import {PageHeaderComponent} from './layout/page-header/page-header.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { ListService } from './list.service';
+import {MatPaginatorIntl, MatPaginatorModule} from '@angular/material/paginator';
+import { PersonalizeMatPaginatorIntl } from './PersonalizeMatPaginatorIntl';
 
 @NgModule({
   declarations: [
     InputSearchComponent,
     PageBodyComponent,
     PageHeaderComponent,
-    
   ],
   exports:[
     InputSearchComponent,
@@ -22,6 +23,7 @@ import { ListService } from './list.service';
     PageHeaderComponent,
     MatAutocompleteModule,
     MatInputModule,
+    MatPaginatorModule
   ],
   imports: [
     CommonModule,
@@ -29,9 +31,12 @@ import { ListService } from './list.service';
     ReactiveFormsModule,
     MatAutocompleteModule,
     MatInputModule,
+    MatAutocompleteModule,
+    MatPaginatorModule
   ],
   providers: [
-    ListService
+    ListService,
+    { provide: MatPaginatorIntl, useClass: PersonalizeMatPaginatorIntl}
   ]
 })
 export class SharedModule { }

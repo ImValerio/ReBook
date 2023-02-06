@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute} from '@angular/router';
 import { Observable, ReplaySubject, Subject, takeUntil } from 'rxjs';
 import { SearchText, SearchTextResults } from 'src/app/models/search-text.model';
@@ -18,6 +19,10 @@ export class SearchResultComponent implements OnInit, OnDestroy{
   searchtext: string | null= '';
   searchResult: ReplaySubject<any> = new ReplaySubject<any>(1);
   searchResult$: Observable<any> = this.searchResult.asObservable();
+  page: number = 0;
+  length = 50;
+  pageSize = 10;
+  pageIndex = 0;
   
   
   private _unsubscribeAll: Subject<void> = new Subject<void>();
@@ -43,7 +48,7 @@ export class SearchResultComponent implements OnInit, OnDestroy{
     const t: SearchText ={
       text: text,
       mode: 'CONTENT_TEXT',
-      page: 1
+      page: (this.page+1)
     };
     this.searchResultService.searchText(t).pipe(
       takeUntil(this._unsubscribeAll),
@@ -54,6 +59,12 @@ export class SearchResultComponent implements OnInit, OnDestroy{
 
   ngOnDestroy(): void{
     this._unsubscribeAll.next();
+  }
+
+  handlePageEvent(page:PageEvent): void{
+    console.log('sono dentro', page);
+    this.page = page.pageIndex;
+    this.listResult(this.searchtext);
   }
 
 

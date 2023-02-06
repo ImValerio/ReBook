@@ -14,5 +14,19 @@
           <p>{{res.review_title}}</p>
         </div>
       </ng-container>
+      <!-- <mat-paginator [length]="100" (page)="handlePageEvent($event)"
+              [pageSize]="pageSize" class="demo-paginator"
+              aria-label="Select page">
+      </mat-paginator> -->
+      <mat-paginator #paginator
+               class="demo-paginator"
+               (page)="handlePageEvent($event)"
+               [length]="100"
+               [pageSize]="pageSize"
+               [pageSizeOptions]="[]"
+               [hidePageSize]="true"
+               [pageIndex]="pageIndex"
+               aria-label="Select page">
+      </mat-paginator>
     </div>
   </page-body>
