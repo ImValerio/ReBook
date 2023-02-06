@@ -2,7 +2,7 @@ from whoosh.analysis import NgramFilter, RegexTokenizer
 from whoosh.query import Term, Or
 
 
-def get_ngrams(text, query, searcher):
+def get_ngrams(text, query, searcher,page):
     ngf = NgramFilter(minsize=0, maxsize=3)
     rext = RegexTokenizer()
     stream = rext(text)
@@ -13,5 +13,6 @@ def get_ngrams(text, query, searcher):
                    for ngram_title in ngrams]
     query_content = [Term("content", ngram) for ngram in ngrams]
     query = Or(query_title + query_content)
-    results = searcher.search(query)
+
+    results = searcher.search_page(query, page)
     return results
