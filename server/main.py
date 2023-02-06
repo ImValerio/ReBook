@@ -77,6 +77,7 @@ def read_item(search: SearchText):
     query = prioritizeTitle(search.text, parser)
     results = searcher.search_page(query, search.page)
 
+
     results_score = [result.score for result in results]
     results_score_norm = [round(normalizeBetweenZeroToN(res, results_score, 3))
                           for res in results_score]
@@ -93,10 +94,10 @@ def read_item(search: SearchText):
     if not len(results):
         corrected.isUsed = True
         query = parser.parse(corrected.string)
-        results = searcher.search(query)
+        results = searcher.search_page(query, search.page)
         data = get_review_obj(results)
         # Se la query 'corretta' non restituisce alcun risultato allora cerchiamo con i q-grams della stringa utente
         if not len(results):
-            results_ngrams = get_ngrams(search.text, query, searcher)
+            results_ngrams = get_ngrams(search.text, query, searcher,search.page)
 
-    return {"corrected": {"text":corrected.string, "isUsed":corrected.isUsed}, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "DCG": dcg}
+    return {"corrected": {"text":corrected.string, "isUsed":corrected.isUsed}, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "page_len": results.pagelen}
