@@ -31,27 +31,26 @@ export class SearchResultComponent implements OnInit, OnDestroy{
     this.listService.sharedList$.pipe(
       takeUntil(this._unsubscribeAll),
       ).subscribe((listValue)=>{
-      // this.listText = listValue;
-      // console.log(listValue);
-      
-      this.searchResult.next(listValue);
+        if(listValue.length){
+          this.searchResult.next(listValue);
+        }else{
+          this.listResult(this.searchtext);
+        }      
     });
-    
-    // this.listResult(this.searchtext);
   }
 
-  // listResult(text: string| null): void {
-  //   const t: SearchText ={
-  //     text: text,
-  //     mode: 'CONTENT_TEXT',
-  //     page: 1
-  //   };
-  //   this.searchResultService.searchText(t).pipe(
-  //     takeUntil(this._unsubscribeAll),
-  //   ).subscribe((res) => {
-  //     this.searchResult.next(res.results);
-  //   });
-  // }
+  listResult(text: string| null): void {
+    const t: SearchText ={
+      text: text,
+      mode: 'CONTENT_TEXT',
+      page: 1
+    };
+    this.searchResultService.searchText(t).pipe(
+      takeUntil(this._unsubscribeAll),
+    ).subscribe((res) => {
+      this.searchResult.next(res.results);
+    });
+  }
 
   ngOnDestroy(): void{
     this._unsubscribeAll.next();
