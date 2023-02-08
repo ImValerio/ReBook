@@ -100,4 +100,4 @@ def read_item(search: SearchText):
         if not len(results):
             results_ngrams = get_ngrams(search.text, query, searcher,search.page)
 
-    return {"corrected": {"text":corrected.string, "isUsed":corrected.isUsed}, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "page_len": results.pagelen}
+    return {"corrected": {"text":corrected.string, "isUsed":corrected.isUsed}, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "page_len": results.pagecount}
