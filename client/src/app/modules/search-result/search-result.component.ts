@@ -20,40 +20,40 @@ export class SearchResultComponent implements OnInit, OnDestroy{
   searchResult: ReplaySubject<any> = new ReplaySubject<any>(1);
   searchResult$: Observable<any> = this.searchResult.asObservable();
   page: number = 0;
-  length = 50;
+  length = 0;
   pageSize = 10;
   pageIndex = 0;
   
-  
   private _unsubscribeAll: Subject<void> = new Subject<void>();
 
-  constructor(private activatedRoute: ActivatedRoute, private searchResultService: SearchResultService, private listService: ListService){
+  constructor(private activatedRoute: ActivatedRoute, private searchResultService: SearchResultService, public listService: ListService){
   }
 
   ngOnInit(): void{
     this.searchtext = this.activatedRoute.snapshot.paramMap.get('text');
-    
-    this.listService.sharedList$.pipe(
+    this.listService.sharedList.pipe(
       takeUntil(this._unsubscribeAll),
       ).subscribe((listValue)=>{
-        if(listValue.length){
-          this.searchResult.next(listValue);
-        }else{
-          this.listResult(this.searchtext);
-        }      
-    });
+          if(listValue.length){
+            this.searchResult.next(listValue);
+            this.length = this.listService.pageLength;
+          }else{
+            this.listResult(this.searchtext);
+          }
+    });    
   }
 
   listResult(text: string| null): void {
-    const t: SearchText ={
+    const book: SearchText ={
       text: text,
-      mode: 'CONTENT_TEXT',
+      mode: this.listService.mode,
       page: (this.page+1)
     };
-    this.searchResultService.searchText(t).pipe(
+    this.searchResultService.searchText(book).pipe(
       takeUntil(this._unsubscribeAll),
     ).subscribe((res) => {
       this.searchResult.next(res.results);
+      this.length = res.page_len;
     });
   }
 
@@ -62,7 +62,6 @@ export class SearchResultComponent implements OnInit, OnDestroy{
   }
 
   handlePageEvent(page:PageEvent): void{
-    console.log('sono dentro', page);
     this.page = page.pageIndex;
     this.listResult(this.searchtext);
   }

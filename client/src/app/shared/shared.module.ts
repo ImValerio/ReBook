@@ -9,7 +9,10 @@ import {PageHeaderComponent} from './layout/page-header/page-header.component';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { ListService } from './list.service';
 import {MatPaginatorIntl, MatPaginatorModule} from '@angular/material/paginator';
-import { PersonalizeMatPaginatorIntl } from './PersonalizeMatPaginatorIntl';
+import { PersonalizeMatPaginatorIntl } from './personalizeMatPaginatorIntl';
+import { MatSelectModule } from '@angular/material/select';
+import {MatButtonModule} from '@angular/material/button';
+
 
 @NgModule({
   declarations: [
@@ -23,7 +26,9 @@ import { PersonalizeMatPaginatorIntl } from './PersonalizeMatPaginatorIntl';
     PageHeaderComponent,
     MatAutocompleteModule,
     MatInputModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatSelectModule,
+    MatButtonModule
   ],
   imports: [
     CommonModule,
@@ -32,7 +37,9 @@ import { PersonalizeMatPaginatorIntl } from './PersonalizeMatPaginatorIntl';
     MatAutocompleteModule,
     MatInputModule,
     MatAutocompleteModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatSelectModule,
+    MatButtonModule
   ],
   providers: [
     ListService,

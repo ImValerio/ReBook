@@ -1,6 +1,6 @@
 export interface SearchText {
     text: string | null;
-    mode: string;
+    mode: string | null | undefined;
     page: number
 }
 
@@ -9,6 +9,7 @@ export interface SearchTextResults{
     results: Book[];
     ngrams: Book[];
     dcg: number;
+    page_len: number;
 }
 
 export interface Book{

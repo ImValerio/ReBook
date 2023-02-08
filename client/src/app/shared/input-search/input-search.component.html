@@ -9,3 +9,16 @@
         </mat-option>
     </mat-autocomplete>
 </mat-form-field>
+
+<div class="w-full flex flex-row">
+    <mat-form-field class="w-1/3 flex">
+        <mat-label>Choose a mode</mat-label>
+        <mat-select [(value)]="selectedMode">
+            <mat-option *ngFor="let mode of modes | keyvalue" [value]="mode.key" >{{mode.value}}</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <div class="flex justify-around items-center w-2/3">
+        <button mat-raised-button [disabled]="!currentText" (click)="outputTextResult(inputText.value)">Search</button>
+    </div>
+</div>
+
