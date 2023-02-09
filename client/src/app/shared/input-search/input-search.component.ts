@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { debounceTime, map, Subject, take, takeUntil } from 'rxjs';
-import { SearchText } from 'src/app/models/search-text.model';
+import { Book, SearchText } from 'src/app/models/search-text.model';
 import { ListService } from '../list.service';
 import { InputSearchService } from './input-search.service';
 
@@ -19,7 +19,7 @@ export class InputSearchComponent implements OnInit, OnDestroy {
   @Input() initialText: string | null = '';
   @Input() initialMode: string | null = '';
   currentText= '';
-  public listText: any[] = [];
+  public listText: Book[] = [];
   public pageLength: number = 0;
   disableModeSelection: boolean = false;
 
@@ -27,7 +27,7 @@ export class InputSearchComponent implements OnInit, OnDestroy {
   selectedMode = 'CONTENT_BM25';
   actualMode: string = 'CONTENT_BM25';
 
-  private listSearch: Subject<any> = new Subject<any>();
+  private listSearch: Subject<SearchText> = new Subject<SearchText>();
   private cancelCall: Subject<void> = new Subject<void>();
   private _unsubscribeAll: Subject<void> = new Subject<void>();
 
@@ -75,7 +75,7 @@ export class InputSearchComponent implements OnInit, OnDestroy {
   }
 
 
-  public outputTextResult(newText: any){
+  public outputTextResult(newText: string){
     const filterList = this.listText.filter(res => res.content===newText);
     if(this.actualMode !== this.selectedMode){
       this.actualMode = this.selectedMode;
@@ -102,10 +102,10 @@ export class InputSearchComponent implements OnInit, OnDestroy {
     }
   }
 
-  outputTextResultClick(newText: any){
-    this.listService.setList([newText]);
+  outputTextResultClick(bookReview: Book){
+    this.listService.setList([bookReview]);
     this.listService.mode = this.selectedMode;
-    this.router.navigate([ 'search-result', newText.content]);
+    this.router.navigate([ 'search-result', bookReview.content]);
   }
 
   ngOnDestroy(): void{

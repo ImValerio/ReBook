@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject} from 'rxjs';
+import { Book } from '../models/search-text.model';
 
 @Injectable()
 export class ListService {
 
-    sharedList: BehaviorSubject<any> = new BehaviorSubject<any>({});
+    sharedList: BehaviorSubject<Book[]> = new BehaviorSubject<Book[]>([]);
     sharedList$ = this.sharedList.asObservable();
     pageLength: number=0;
     mode: string = '';
