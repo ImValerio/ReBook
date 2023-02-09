@@ -1,5 +1,5 @@
 export interface SearchText {
-    text: string | null;
+    text: string | null | undefined;
     mode: string | null | undefined;
     page: number
 }
@@ -16,7 +16,7 @@ export interface Book{
     id: string;
     book_title: string;
     content: string;
-    review_scrore: number;
+    review_score: number;
     review_title: string;
     sentiment: number;
     length: number;

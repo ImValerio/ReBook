@@ -4,28 +4,28 @@
     </page-header>
     <div body class="flex flex-col justify-center items-center mt-7 bg-gray-200">
       <div class="w-full flex justify-center max-w-lg">
-        <input-search class="w-full" [initialText]="searchtext" [initialMode]="listService.mode"></input-search>
+        <input-search class="w-3/4 sm:w-full" [initialText]="searchtext" [initialMode]="listService.mode"></input-search>
       </div>
       <ng-container *ngIf="(searchResult$ | async) as searchResult">
-        <div class="mt-2 w-full h-full max-w-2xl " *ngFor="let res of searchResult">
-          <p>{{res.book_title}}</p>
-          <p>{{res.content}}</p>
-          <p>{{res.review_scrore}}</p>
-          <p>{{res.review_title}}</p>
+        <div class="shadow-md bg-white my-2 p-2 mt-2 w-3/4 sm:w-full h-full max-w-2xl rounded-xl" *ngFor="let res of searchResult">
+          <div class="flex items-center justify-around w-full">
+            <p class="font-bold text-xl">{{res.review_title}}</p>
+            <p class="font-semibold text-md">{{res.review_score}}/5</p>
+          </div>
+          <p class="font-thin text-xs">{{res.book_title}}</p> 
+          <p class="text-base">{{res.content}}</p>
         </div>
       </ng-container>
 
-      <ng-container *ngIf="(listService.sharedList$ | async) as sharedList">
-        <mat-paginator *ngIf="sharedList.length>10" #paginator
-                class="demo-paginator"
-                (page)="handlePageEvent($event)"
-                [length]="(10*length)"
-                [pageSize]="pageSize"
-                [pageSizeOptions]="[]"
-                [hidePageSize]="true"
-                [pageIndex]="pageIndex"
-                aria-label="Select page">
-        </mat-paginator>
-      </ng-container>
+      <mat-paginator *ngIf="length>1" #paginator
+              class="mb-2 mt-1"
+              (page)="handlePageEvent($event)"
+              [length]="length*length"
+              [pageSize]="length"
+              [pageSizeOptions]="[]"
+              [hidePageSize]="true"
+              [pageIndex]="pageIndex"
+              aria-label="Select page">
+      </mat-paginator>
     </div>
   </page-body>

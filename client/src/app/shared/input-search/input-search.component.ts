@@ -62,11 +62,16 @@ export class InputSearchComponent implements OnInit, OnDestroy {
       debounceTime(200)
     ).subscribe((book)=>{
       this.cancelCall.next();
+      book.text = book.text?.replaceAll('"','|');
       this.inputSearchService.searchText(book).pipe(
         takeUntil(this._unsubscribeAll),
       ).subscribe((list) => {
         this.listService.pageLength = list.page_len;
-        this.listText=list.results;
+        if(list.results.length>0){
+          this.listText=list.results;
+        }else{
+          this.listText = list.ngrams;
+        }
       });
     });
   }
@@ -91,6 +96,7 @@ export class InputSearchComponent implements OnInit, OnDestroy {
     }else{
       if(filterList.length>0){
         this.listService.setList(filterList);
+        this.listService.pageLength = 1;
       }else{
         this.listService.setList(this.listText);
       }
@@ -102,6 +108,7 @@ export class InputSearchComponent implements OnInit, OnDestroy {
   outputTextResultClick(bookReview: Book){
     this.listService.setList([bookReview]);
     this.listService.mode = this.selectedMode;
+    this.listService.pageLength = 1;
     this.router.navigate([ 'search-result', bookReview.content]);
   }
 

@@ -1,3 +1,5 @@
+
+<p class="font-thin text-sm">To prioritize title use the following syntax: "title"</p>
 <mat-form-field class="rounded-xl w-full">
     <input class="w-full" type="text" #inputText='ngModel' [(ngModel)]="currentText" matInput (keyup.enter)="outputTextResult(inputText.value)"
         [matAutocomplete]="auto" name="text" placeholder="Insert a text"

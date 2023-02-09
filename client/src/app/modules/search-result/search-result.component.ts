@@ -21,7 +21,6 @@ export class SearchResultComponent implements OnInit, OnDestroy{
   searchResult$: Observable<Book[]> = this.searchResult.asObservable();
   page: number = 0;
   length = 0;
-  pageSize = 10;
   pageIndex = 0;
   
   private _unsubscribeAll: Subject<void> = new Subject<void>();
@@ -52,7 +51,11 @@ export class SearchResultComponent implements OnInit, OnDestroy{
     this.searchResultService.searchText(book).pipe(
       takeUntil(this._unsubscribeAll),
     ).subscribe((res) => {
-      this.searchResult.next(res.results);
+      if(res.results.length>0){
+        this.searchResult.next(res.results);
+      }else{
+        this.searchResult.next(res.ngrams);
+      }
       this.length = res.page_len;
     });
   }
