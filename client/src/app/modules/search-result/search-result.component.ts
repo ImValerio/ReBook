@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute} from '@angular/router';
 import { Observable, ReplaySubject, Subject, takeUntil } from 'rxjs';
-import { SearchText, SearchTextResults } from 'src/app/models/search-text.model';
+import { Book, SearchText} from 'src/app/models/search-text.model';
 import { ListService } from 'src/app/shared/list.service';
 import { SearchResultService } from './search-result.service';
 
@@ -17,8 +17,8 @@ import { SearchResultService } from './search-result.service';
 export class SearchResultComponent implements OnInit, OnDestroy{
 
   searchtext: string | null= '';
-  searchResult: ReplaySubject<any> = new ReplaySubject<any>(1);
-  searchResult$: Observable<any> = this.searchResult.asObservable();
+  searchResult: ReplaySubject<Book[]> = new ReplaySubject<Book[]>(1);
+  searchResult$: Observable<Book[]> = this.searchResult.asObservable();
   page: number = 0;
   length = 0;
   pageSize = 10;

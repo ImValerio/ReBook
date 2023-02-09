@@ -1,7 +1,7 @@
 import { HttpClient} from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Subject, takeUntil} from 'rxjs';
-import { SearchTextResults } from 'src/app/models/search-text.model';
+import { Subject, takeUntil} from 'rxjs';
+import { SearchText, SearchTextResults } from 'src/app/models/search-text.model';
 
 @Injectable()
 export class InputSearchService {
@@ -10,11 +10,10 @@ export class InputSearchService {
 
     constructor(private http: HttpClient){ }
 
-    searchText(text: any){
+    searchText(text: SearchText){
         const url = 'http://localhost:8000/search';
         return this.http.post<SearchTextResults>(url, text).pipe(
             takeUntil(this._unsubscribeAll),
-            // map(res => res.results)
         );
     }
 

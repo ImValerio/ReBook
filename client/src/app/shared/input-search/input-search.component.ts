@@ -1,7 +1,6 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { debounceTime, map, Subject, take, takeUntil } from 'rxjs';
+import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { Book, SearchText } from 'src/app/models/search-text.model';
 import { ListService } from '../list.service';
 import { InputSearchService } from './input-search.service';
@@ -31,9 +30,7 @@ export class InputSearchComponent implements OnInit, OnDestroy {
   private cancelCall: Subject<void> = new Subject<void>();
   private _unsubscribeAll: Subject<void> = new Subject<void>();
 
-  constructor(private inputSearchService:InputSearchService, private router: Router, private listService: ListService){
-
-  }
+  constructor(private inputSearchService:InputSearchService, private router: Router, private listService: ListService){}
 
   ngOnInit(): void{
     if(this.initialText){
