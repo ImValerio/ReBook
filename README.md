@@ -19,9 +19,7 @@ Back-end is coded in Python using FastAPI framework.
 
 Setup:
 ```
-pip install Whoosh
-pip install fastapi
-pip install "uvicorn[standard]"
+pip install Whoosh fastapi "uvicorn[standard]" nltk
 ```
 
 Run server:
