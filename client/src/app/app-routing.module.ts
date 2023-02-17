@@ -1,16 +1,18 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { OverviewComponent } from './modules/overview/overview.component';
+import { SearchResultComponent } from './modules/search-result/search-result.component';
 
 export const appRoutes: Route[] = [
   { path: '', pathMatch: 'full', redirectTo: 'overview' },
   
-  
   { 
     path: '', 
-    component: OverviewComponent,
-    children:[{path: 'overview',loadChildren: () => import('./modules/overview/overview.module').then(m => m.OverviewModule)},] 
-  }
+    children:[
+      {path: 'overview', component: OverviewComponent ,loadChildren: () => import('./modules/overview/overview.module').then(m => m.OverviewModule)},
+      {path: 'search-result/:text', component: SearchResultComponent, loadChildren: () => import('./modules/search-result/search-result.module').then(m => m.SearchResultModule) }    
+    ] 
+  },
 
 ];
 

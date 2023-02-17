@@ -11,12 +11,27 @@ from whoosh.qparser import QueryParser, MultifieldParser
 from whoosh.query import *
 from models.BM25F import BM25F
 from models.CustomWeight import CustomWeight
+from whoosh.scoring import WeightScorer
+from utils_fn import calculateSentimentNltk
+from fastapi.middleware.cors import CORSMiddleware
 from whoosh.scoring import TF_IDF
 from utils_fn import calculateSentimentNltk, prioritizeTitle, normalizeBetweenZeroToN, get_review_obj
 from score_fn import sentiment_fn
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:4200",
+    "http://localhost:4200/overview",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def max_matcher():
     return 100000
@@ -28,7 +43,17 @@ class SearchText(BaseModel):
     page: Union[int, None] = 1
 
 
-@ app.post("/search")
+def pos_sentiment_fn(searcher, fieldname, text, matcher):
+
+    docnum = matcher.id()
+    colreader = searcher.reader().column_reader("sentiment")
+    sentiment = float(colreader[docnum])
+    print("SENTIMENT: ", sentiment)
+
+    return sentiment
+
+
+@app.post("/search")
 def read_item(search: SearchText):
 
     ix = open_dir("../indexdir")
@@ -52,6 +77,7 @@ def read_item(search: SearchText):
     query = prioritizeTitle(search.text, parser)
     results = searcher.search_page(query, search.page)
 
+
     results_score = [result.score for result in results]
     results_score_norm = [round(normalizeBetweenZeroToN(res, results_score, 3))
                           for res in results_score]
@@ -63,13 +89,15 @@ def read_item(search: SearchText):
     data = get_review_obj(results)
 
     corrected = searcher.correct_query(query, search.text)
+    corrected.isUsed = False
     # Se la query non restitusice alcun risultato => eseguo la query con la correzione della stringa utente
     if not len(results):
+        corrected.isUsed = True
         query = parser.parse(corrected.string)
-        results = searcher.search(query)
+        results = searcher.search_page(query, search.page)
         data = get_review_obj(results)
         # Se la query 'corretta' non restituisce alcun risultato allora cerchiamo con i q-grams della stringa utente
         if not len(results):
-            results_ngrams = get_ngrams(search.text, query, searcher)
+            results_ngrams = get_ngrams(search.text, query, searcher,search.page)
 
-    return {"corrected": corrected.string, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "DCG": dcg}
+    return {"corrected": {"text":corrected.string, "isUsed":corrected.isUsed}, "results": data, "ngrams": list(get_review_obj(results_ngrams)), "page_len": results.pagecount}
